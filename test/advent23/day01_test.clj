@@ -9,4 +9,3 @@
 (deftest day01.part2
   (testing "Part 2"
     (is (= (part2 (clojure.string/split-lines (slurp "resources/day01.txt"))) 54530))))
-
