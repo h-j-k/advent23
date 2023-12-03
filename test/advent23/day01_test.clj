@@ -1,11 +1,9 @@
-(ns advent23.day01_test
+(ns advent23.day01-test
   (:require [advent23.day01 :refer :all]
             [clojure.test :refer :all]))
 
-(deftest day01.part1
-  (testing "Part 1"
-    (is (= (part1 (clojure.string/split-lines (slurp "resources/day01.txt"))) 56049))))
+(def input (clojure.string/split-lines (slurp "resources/day01.txt")))
 
-(deftest day01.part2
-  (testing "Part 2"
-    (is (= (part2 (clojure.string/split-lines (slurp "resources/day01.txt"))) 54530))))
+(deftest test-part1 (testing "Part 1" (is (= (part1 input) 56049))))
+
+(deftest test-part2 (testing "Part 2" (is (= (part2 input) 54530))))
