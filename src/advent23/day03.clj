@@ -18,7 +18,7 @@
 (defn process-with [f input]
   (group-by (fn [group] (true? (:symbol? (:element group)))) (flatten (map-indexed f input))))
 
-(defn neighbors-of [p]
+(defn nearby [p]
   (let [{x :x y :y} p]
     #{
       {:x (- x 1) :y (- y 1)}, {:x x :y (- y 1)}, {:x (+ x 1) :y (- y 1)},
@@ -26,15 +26,15 @@
       {:x (- x 1) :y (+ y 1)}, {:x x :y (+ y 1)}, {:x (+ x 1) :y (+ y 1)}
       }))
 
-(defn explode-all [symbols] (into #{} (mapcat neighbors-of (mapcat #(:points %) symbols))))
+(defn explode-all [symbols] (into #{} (mapcat nearby (mapcat #(:points %) symbols))))
 
 (defn near-symbol? [targets parts] (filter (fn [p] (some #(contains? targets %) (:points p))) parts))
 
 (defn part-number-of [part] (Integer/parseInt (:value (:element part))))
 
-(defn two-neighboring-parts-product [parts gear]
-  (let [neighboring-parts (near-symbol? (explode-all [gear]) parts)]
-    (if (= (count neighboring-parts) 2) (reduce * (map part-number-of neighboring-parts)) 0)))
+(defn two-nearby-parts-product-else-0 [parts gear]
+  (let [nearby-parts (near-symbol? (explode-all [gear]) parts)]
+    (if (= (count nearby-parts) 2) (reduce * (map part-number-of nearby-parts)) 0)))
 
 (defn part1 [input]
   (let [{parts false symbols true} (process-with get-parts-and-symbols input) targets (explode-all symbols)]
@@ -42,4 +42,4 @@
 
 (defn part2 [input]
   (let [{parts false gears true} (process-with get-parts-and-gears input)]
-    (reduce + (map #(two-neighboring-parts-product parts %) gears))))
+    (reduce + (map #(two-nearby-parts-product-else-0 parts %) gears))))
