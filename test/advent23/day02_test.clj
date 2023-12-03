@@ -5,3 +5,5 @@
 (def input (clojure.string/split-lines (slurp "resources/day02.txt")))
 
 (deftest test-part1 (testing "Part 1" (is (= (part1 input {:r 12 :g 13 :b 14}) 2545))))
+
+(deftest test-part2 (testing "Part 2" (is (= (part2 input) 78111))))
