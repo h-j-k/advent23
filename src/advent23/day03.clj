@@ -9,14 +9,9 @@
                 :points  (map (fn [x] {:x x :y y}) (range (. m start) (. m end)))}
                (lazy-seq (step))))))))
 
-(defn get-parts-and-symbols [y s]
-  (let [parts (get-groups #"\d+" y s) symbols (get-groups #"[^0-9.]+" y s)] (into parts symbols)))
-
-(defn get-parts-and-gears [y s]
-  (let [parts (get-groups #"\d+" y s) gears (get-groups #"\*" y s)] (into parts gears)))
-
-(defn process-with [f input]
-  (group-by (fn [group] (true? (:symbol? (:element group)))) (flatten (map-indexed f input))))
+(defn process-with [re input]
+  (let [f (fn [y s] (into (get-groups #"\d+" y s) (get-groups re y s)))]
+    (group-by (fn [group] (true? (:symbol? (:element group)))) (flatten (map-indexed f input)))))
 
 (defn nearby [p]
   (let [{x :x y :y} p]
@@ -30,16 +25,16 @@
 
 (defn near-symbol? [targets parts] (filter (fn [p] (some #(contains? targets %) (:points p))) parts))
 
-(defn part-number-of [part] (Integer/parseInt (:value (:element part))))
+(defn part-number-of [part] (parse-long (:value (:element part))))
 
 (defn two-nearby-parts-product-else-0 [parts gear]
   (let [nearby-parts (near-symbol? (explode-all [gear]) parts)]
     (if (= (count nearby-parts) 2) (reduce * (map part-number-of nearby-parts)) 0)))
 
 (defn part1 [input]
-  (let [{parts false symbols true} (process-with get-parts-and-symbols input) targets (explode-all symbols)]
+  (let [{parts false symbols true} (process-with #"[^0-9.]+" input) targets (explode-all symbols)]
     (reduce + (map part-number-of (near-symbol? targets parts)))))
 
 (defn part2 [input]
-  (let [{parts false gears true} (process-with get-parts-and-gears input)]
+  (let [{parts false gears true} (process-with #"\*" input)]
     (reduce + (map #(two-nearby-parts-product-else-0 parts %) gears))))

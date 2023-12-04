@@ -1,32 +1,25 @@
 (ns advent23.day02
   (:require [clojure.string :as str]))
 
-(defn less-than-equals [this other]
+(defn &<= [this other]
   (and (<= (:r this) (:r other)) (<= (:g this) (:g other)) (<= (:b this) (:b other))))
 
-(defn is-in [game target] (every? #(less-than-equals % target) (:sets game)))
-
-(defn fewest-of [this other]
-  {:r (max (:r this) (:r other)) :g (max (:g this) (:g other)) :b (max (:b this) (:b other))})
-
-(defn fewest-number [game]
-  (let [fewest (reduce fewest-of {:r 0 :g 0 :b 0} (:sets game))]
-    (reduce * [(:r fewest) (:g fewest) (:b fewest)])))
+(defn least-number [game]
+  (let [least-of (fn [a b] {:r (max (:r a) (:r b)) :g (max (:g a) (:g b)) :b (max (:b a) (:b b))})
+        least (reduce least-of {:r 0 :g 0 :b 0} (:sets game))]
+    (reduce * [(:r least) (:g least) (:b least)])))
 
 (defn to-cube-set [s]
-  {
-   :r (Integer/parseInt (or (last (re-find #"(\d+) r" s)) "0"))
-   :g (Integer/parseInt (or (last (re-find #"(\d+) g" s)) "0"))
-   :b (Integer/parseInt (or (last (re-find #"(\d+) b" s)) "0"))
-   })
+  (let [parse (fn [re] (parse-long (or (last (re-find re s)) "0")))]
+    {:r (parse #"(\d+) r") :g (parse #"(\d+) g") :b (parse #"(\d+) b")}))
 
 (defn to-game [s]
-  (let [[_ id raw-sets] (re-matches #"Game (\d+): (.+)" s)]
-    (let [sets (map to-cube-set (str/split raw-sets #"; "))]
-      {:id (Integer/parseInt id) :sets sets})))
+  (let [[_ id raw-sets] (re-matches #"Game (\d+): (.+)" s)
+        sets (map to-cube-set (str/split raw-sets #"; "))]
+    {:id (parse-long id) :sets sets}))
 
 (defn part1 [input target]
-  (reduce + (map #(:id %) (filter #(is-in % target) (map to-game input)))))
+  (let [is-in (fn [game target] (every? #(&<= % target) (:sets game)))]
+    (reduce + (map #(:id %) (filter #(is-in % target) (map to-game input))))))
 
-(defn part2 [input]
-  (reduce + (map fewest-number (map to-game input))))
+(defn part2 [input] (reduce + (map least-number (map to-game input))))
