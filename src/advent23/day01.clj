@@ -2,8 +2,8 @@
   (:require [clojure.string :as str]))
 
 (defn calibrate [s]
-  (def numbers (filter number? (map read-string (str/split s #""))))
-  (+ (* 10 (first numbers)) (last numbers)))
+  (let [numbers (filter number? (map read-string (str/split s #"")))]
+    (+ (* 10 (first numbers)) (last numbers))))
 
 (defn part1 [input] (reduce + (map calibrate input)))
 
