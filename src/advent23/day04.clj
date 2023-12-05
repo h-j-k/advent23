@@ -4,12 +4,12 @@
 
 (defn winning-cards [card] (count (set/intersection (:winning card) (:own card))))
 
-(defn process-cards [cards card]
-  (let [n (get cards (- (:id card) 1)) copies (range (:id card) (+ (:id card) (winning-cards card)))]
-    (reduce (fn [acc c] (assoc acc c (+ (get acc c) n))) cards copies)))
-
 (defn to-points [card]
-  (let [exp (winning-cards card)] (cond (> exp 0) (long (Math/pow 2 (- exp 1))) :else 0)))
+  (let [exp (winning-cards card)] (if (> exp 0) (long (Math/pow 2 (- exp 1))) 0)))
+
+(defn process-cards [cards card]
+  (let [n (get cards (- (:id card) 1)) copies (range (winning-cards card))]
+    (reduce (fn [acc c] (assoc acc c (+ (get acc c) n))) cards (map #(+ (:id card) %) copies))))
 
 (defn process [s]
   (let [[_ id winning own] (re-matches #"Card\s+(\d+):([^|]+)\|(.+)" s)
