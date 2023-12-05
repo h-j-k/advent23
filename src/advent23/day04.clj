@@ -2,9 +2,14 @@
   (:require [clojure.set :as set]
             [clojure.string :as str]))
 
+(defn winning-cards [card] (count (set/intersection (:winning card) (:own card))))
+
+(defn process-cards [cards card]
+  (let [n (get cards (- (:id card) 1)) copies (range (:id card) (+ (:id card) (winning-cards card)))]
+    (reduce (fn [acc c] (assoc acc c (+ (get acc c) n))) cards copies)))
+
 (defn to-points [card]
-  (let [exp (count (set/intersection (:winning card) (:own card)))]
-    (cond (> exp 0) (long (Math/pow 2 (- exp 1))) :else 0)))
+  (let [exp (winning-cards card)] (cond (> exp 0) (long (Math/pow 2 (- exp 1))) :else 0)))
 
 (defn process [s]
   (let [[_ id winning own] (re-matches #"Card\s+(\d+):([^|]+)\|(.+)" s)
@@ -13,3 +18,6 @@
   )
 
 (defn part1 [input] (reduce + (map (comp to-points process) input)))
+
+(defn part2 [input]
+  (reduce + (reduce process-cards (into [] (repeat (count input) 1)) (map process input))))
