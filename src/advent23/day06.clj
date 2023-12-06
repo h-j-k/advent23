@@ -8,5 +8,10 @@
   (let [f (fn [s] (into [] (map parse-long (str/split s #"\s+"))))]
     (map vector (rest (f times)) (rest (f distances)))))
 
-(defn part1 [input]
-  (reduce * (map count-better-timings (time-and-distances input))))
+(defn joined-time-and-distances [[times distances]]
+  (let [f (fn [s] (into [] (map parse-long (str/split (str/replace s #"\s+" "") #":"))))]
+    (map vector (rest (f times)) (rest (f distances)))))
+
+(defn part1 [input] (reduce * (map count-better-timings (time-and-distances input))))
+
+(defn part2 [input] (reduce * (map count-better-timings (joined-time-and-distances input))))

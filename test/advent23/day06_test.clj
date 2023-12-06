@@ -9,3 +9,5 @@
    "Distance:  9  40  200"])
 
 (deftest part1-test (testing "Part 1" (is (= (part1 input) 1083852))))
+
+(deftest part2-test (testing "Part 2" (is (= (part2 input) 23501589))))
