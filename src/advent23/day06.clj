@@ -1,17 +1,12 @@
 (ns advent23.day06
   (:require [clojure.string :as str]))
 
-(defn count-better-timings [[time distance]]
-  (count (filter #(< distance %) (map #(* % (- time %)) (range 1 time)))))
+(defn process [f [times distances]]
+  (let [record-beating (fn [[t d]] (count (filter #(< d %) (map #(* % (- t %)) (range 1 t)))))]
+    (reduce * (map record-beating (map vector (rest (f times)) (rest (f distances)))))))
 
-(defn time-and-distances [[times distances]]
-  (let [f (fn [s] (into [] (map parse-long (str/split s #"\s+"))))]
-    (map vector (rest (f times)) (rest (f distances)))))
+(defn part1 [input]
+  (process #(into [] (map parse-long (str/split % #"\s+"))) input))
 
-(defn joined-time-and-distances [[times distances]]
-  (let [f (fn [s] (into [] (map parse-long (str/split (str/replace s #"\s+" "") #":"))))]
-    (map vector (rest (f times)) (rest (f distances)))))
-
-(defn part1 [input] (reduce * (map count-better-timings (time-and-distances input))))
-
-(defn part2 [input] (reduce * (map count-better-timings (joined-time-and-distances input))))
+(defn part2 [input]
+  (process #(into [] (map parse-long (str/split (str/replace % #"\s+" "") #":"))) input))
