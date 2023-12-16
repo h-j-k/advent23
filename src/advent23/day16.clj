@@ -47,16 +47,28 @@
     [(zipmap (map #(:point %) widgets) widgets)
      (fn [{{:keys [x y]} :point}] (and (<= 0 x (dec (count (first input)))) (<= 0 y (dec (count input)))))]))
 
-(defn count-energized-tiles [widgets is-within? start]
-  (loop [remaining (transient [start]) seen (transient #{})]
+(defn count-energized-tiles [widgets is-within? origin]
+  (loop [remaining (transient [origin]) seen (transient #{})]
     (if (zero? (count remaining))
       (count (distinct (map #(:point %) (persistent! seen))))
       (let [current (get remaining (dec (count remaining)))]
         (recur (reduce conj!
                        (pop! remaining)
-                       (if (contains? seen current) [] (filter is-within? ((:fn (get widgets (:point current) {:fn pass})) current))))
+                       (if (contains? seen current)
+                         [] (filter is-within? ((:fn (get widgets (:point current) {:fn pass})) current))))
                (conj! seen current))))))
 
 (defn part1 [input]
   (let [[widgets is-within?] (parse input)]
-    (count-energized-tiles widgets is-within? {:point {:x 0 :y 0} :d :east})))
+    (str (count-energized-tiles widgets is-within? {:point {:x 0 :y 0} :d :east}))))
+
+(defn part2 [input]
+  (let [[widgets is-within?] (parse input)
+        max-x (count (first input))
+        max-y (count input)
+        origins (concat
+                  (map (fn [x] {:point {:x x :y (dec max-y)} :d :north}) (range 0 max-x))
+                  (map (fn [y] {:point {:x 0 :y y} :d :east}) (range 0 max-y))
+                  (map (fn [x] {:point {:x x :y 0} :d :south}) (range 0 max-x))
+                  (map (fn [y] {:point {:x (dec max-x) :y y} :d :west}) (range 0 max-y)))]
+    (str (apply max (map #(count-energized-tiles widgets is-within? %) origins)))))
