@@ -42,29 +42,21 @@
                fn (cond (= \/ value) forward-slash (= \\ value) backslash (= \| value) pipe (= \- value) hyphen)]
            (cons {:fn fn :point {:x (. m start) :y y}} (lazy-seq (step)))))))))
 
-(defn parse-widgets [input]
+(defn parse [input]
   (let [widgets (filter #(not (nil? %)) (flatten (map-indexed parse-row input)))]
-    (zipmap (map #(:point %) widgets) widgets)))
+    [(zipmap (map #(:point %) widgets) widgets)
+     (fn [{{:keys [x y]} :point}] (and (<= 0 x (dec (count (first input)))) (<= 0 y (dec (count input)))))]))
 
-(defn find-energized-tiles [widgets is-within?]
-  (loop [remaining (transient [{:point {:x 0 :y 0} :d :east}]) seen (transient {})]
+(defn count-energized-tiles [widgets is-within? start]
+  (loop [remaining (transient [start]) seen (transient #{})]
     (if (zero? (count remaining))
-      (persistent! seen)
-      (let [current (get remaining (dec (count remaining))) next-remaining (pop! remaining)
-            has-seen? (contains? seen current) next-seen (assoc! seen current (inc (get seen current 0)))]
-        (if has-seen?
-          (recur next-remaining next-seen)
-          (recur (reduce conj!
-                         next-remaining
-                         (filter is-within? ((:fn (get widgets (:point current) {:fn pass})) current)))
-                 next-seen))))))
-
-(defn is-within? [max-x max-y] (fn [{{:keys [x y]} :point}] (and (<= 0 x max-x) (<= 0 y max-y))))
+      (count (distinct (map #(:point %) (persistent! seen))))
+      (let [current (get remaining (dec (count remaining)))]
+        (recur (reduce conj!
+                       (pop! remaining)
+                       (if (contains? seen current) [] (filter is-within? ((:fn (get widgets (:point current) {:fn pass})) current))))
+               (conj! seen current))))))
 
 (defn part1 [input]
-  (count
-    (distinct
-      (map #(:point %)
-           (keys
-             (find-energized-tiles
-               (parse-widgets input) (is-within? (dec (count (first input))) (dec (count input)))))))))
+  (let [[widgets is-within?] (parse input)]
+    (count-energized-tiles widgets is-within? {:point {:x 0 :y 0} :d :east})))
