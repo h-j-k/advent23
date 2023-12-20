@@ -27,36 +27,34 @@
 
 (defn opposite [direction] (cond (= direction \^) \v (= direction \v) \^ (= direction \<) \> (= direction \>) \<))
 
-(defn process-next [blocks current max next-steps is-within? {:keys [remaining seen] :as state}]
-  (doseq [next (filter is-within? (map #(next-step blocks current max %) (next-steps (:last-steps current))))]
+(defn next-steps [min max]
+  (fn [last-steps]
+    (let [x (peek last-steps)]
+      (cond
+        (and (= (count last-steps) max) (= (count (distinct last-steps)) 1)) (except #{(opposite x) x})
+        (= (count (distinct (take-last min last-steps))) 1) (except #{(opposite x)})
+        :else [x]))))
+
+(defn process-next [blocks current is-within? min max {:keys [remaining seen] :as state}]
+  (doseq [next (filter is-within? (map #(next-step blocks current max %) ((next-steps min max) (:last-steps current))))]
     (let [key (dissoc next :loss) value (:loss next)]
       (if (< value (.getOrDefault seen key Long/MAX_VALUE)) (do (.put seen key value) (.add remaining next)))))
   state)
 
-(defn process [blocks is-reached? is-within? max next-steps]
+(defn process [blocks is-reached? is-within? min max]
   (let [origins (new PriorityQueue (comparator (fn [a b] (< (:loss a) (:loss b)))))]
     (.add origins {:last-steps [] :loss 0 :point {:x 0 :y 0}})
     (loop [state {:remaining origins :seen (new HashMap)}]
       (let [current (.poll (:remaining state))]
         (if (is-reached? current)
-          (:loss current)
-          (recur (process-next blocks current max next-steps is-within? state)))))))
-
-(defn part1-next-steps [last-steps]
-  (cond
-    (< (count last-steps) 3) (except #{(opposite (peek last-steps))})
-    :else (let [x (peek last-steps)] (except #{(opposite x) (if (and (= (count (distinct last-steps)) 1)) x)}))))
+          (str (- (:loss current) (:loss (get blocks {:x 0 :y 0}))))
+          (recur (process-next blocks current is-within? min max state)))))))
 
 (defn part1 [input]
   (let [[blocks is-reached? is-within?] (parse input)]
-    (str (process blocks is-reached? is-within? 3 part1-next-steps))))
-
-(defn part2-next-steps [last-steps]
-  (cond
-    (and (= (count last-steps) 10) (= (count (distinct last-steps)) 1)) (let [x (peek last-steps)] (except #{(opposite x) x}))
-    :else (let [x (peek last-steps)] (if (= (count (distinct (take-last 4 last-steps))) 1) (except #{(opposite x)}) [x]))))
+    (process blocks is-reached? is-within? 1 3)))
 
 (defn part2 [input]
   (let [[blocks is-reached? is-within?] (parse input)
         part2-is-reached? (fn [v] (and (is-reached? v) (= (count (distinct (take-last 4 (:last-steps v)))) 1)))]
-    (str (- (process blocks part2-is-reached? is-within? 10 part2-next-steps) (:loss (get blocks {:x 0 :y 0}))))))
+    (process blocks part2-is-reached? is-within? 4 10)))
