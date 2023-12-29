@@ -15,9 +15,7 @@
                  (if (empty? focal-length?) (dissoc current label) (assoc current label (parse-long focal-length?))))))
 
 (defn part2 [input]
-  (str
-    (reduce + (map #(reduce * %)
-                   (apply concat
-                          (map-indexed
-                            (fn [i x] (map-indexed (fn [j y] [(inc i) (inc j) (second y)]) x))
-                            (reduce process (vec (repeat 256 (ordered-map []))) (str/split (first input) #","))))))))
+  (str (reduce + (apply concat
+                        (map-indexed
+                          (fn [i x] (map-indexed (fn [j y] (* (inc i) (inc j) (second y))) x))
+                          (reduce process (vec (repeat 256 (ordered-map []))) (str/split (first input) #",")))))))
