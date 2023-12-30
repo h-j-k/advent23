@@ -12,10 +12,23 @@
         )
       line)))
 
-(defn count-load [line]
-  (let [length (count line)] (reduce + 0 (map-indexed (fn [i v] (if (= \O v) (- length i) 0)) line))))
+(defn count-load [grid]
+  (let [size (count grid)] (reduce + (map-indexed (fn [i v] (* (- size i) (count (filter #(= \O %) v)))) grid))))
 
-(defn part1 [input]
-  (let [grid (map #(str/split % #"") input)
-        transformed (map #(apply str %) (apply map list grid))]
-    (str (reduce + 0 (map (comp count-load shift-left) transformed)))))
+(defn counter-clockwise-flip [grid] (mapv #(apply str %) (apply map list grid)))
+
+(defn tilt-north [grid]
+  (counter-clockwise-flip (mapv shift-left (counter-clockwise-flip (mapv #(str/split % #"") grid)))))
+
+(defn part1 [input] (str (count-load (tilt-north input))))
+
+(defn tilt-west [grid] (mapv shift-left grid))
+
+(defn tilt-south [grid]
+  (rseq (counter-clockwise-flip (mapv shift-left (counter-clockwise-flip (rseq (mapv #(str/split % #"") grid)))))))
+
+(defn tilt-east [grid] (mapv str/reverse (mapv shift-left (mapv #(apply str %) (mapv str/reverse grid)))))
+
+(defn part2 [input]
+  (let [spin-cycle (fn [grid] (tilt-east (tilt-south (tilt-west (tilt-north grid)))))]
+    (str (count-load (reduce (fn [acc _] (spin-cycle acc)) input (range 1000)))))) ; magic?
