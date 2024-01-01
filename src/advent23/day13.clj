@@ -9,21 +9,16 @@
         (let [n (min i (- size i))]
           (recur (inc i) (if (= (subvec pattern (- i n) i) (rseq (subvec pattern i (+ i n)))) (conj r [type i]) r)))))))
 
-(defn is-horizontal-reflection? [pattern] (is-reflection? pattern :horizontal))
-
-(defn is-vertical-reflection? [pattern] (is-reflection? (mapv #(apply str %) (apply map list pattern)) :vertical))
-
 (defn find-reflection [pattern pred]
-  (let [horizontals (filter pred (is-horizontal-reflection? pattern))]
+  (let [horizontals (filter pred (is-reflection? pattern :horizontal))]
     (if (not (empty? horizontals))
       (first horizontals)
-      (let [verticals (filter pred (is-vertical-reflection? pattern))]
+      (let [verticals (filter pred (is-reflection? (mapv #(apply str %) (apply map list pattern)) :vertical))]
         (if (not (empty? verticals)) (first verticals))))))
 
 (defn process [input mapper]
-  (let [patterns (map vec (filter #(not (= '("") %)) (partition-by #(= "" %) input)))
-        f (fn [acc [type v]] (+ acc (cond (= :horizontal type) (* 100 v) (= :vertical type) v :else 0)))]
-    (str (reduce f 0 (map mapper patterns)))))
+  (let [f (fn [acc [type v]] (+ acc (cond (= :horizontal type) (* 100 v) (= :vertical type) v :else 0)))]
+    (str (reduce f 0 (map mapper (map vec (filter #(not (= '("") %)) (partition-by #(= "" %) input))))))))
 
 (defn part1 [input] (process input #(find-reflection % (fn [_] true))))
 
@@ -32,11 +27,11 @@
     (mapv #(apply str %) (assoc grid y (assoc row x (if (= col ".") "#" "."))))))
 
 (defn smudges [pattern]
-  (apply concat
-         (map (fn [y] (map (fn [x] (smudge pattern x y)) (range 0 (count (first pattern))))) (range 0 (count pattern)))))
+  (let [indices (fn [coll] (range 0 (count coll)))]
+    (apply concat (map (fn [y] (map (fn [x] (smudge pattern x y)) (indices (first pattern)))) (indices pattern)))))
 
 (defn different-reflection [pattern]
   (let [excludes #{(find-reflection pattern (fn [_] true))} pred (fn [v] (not (contains? excludes v)))]
-    (first (filter (fn [v] (some? v)) (map #(find-reflection % pred) (smudges pattern))))))
+    (first (filter some? (map #(find-reflection % pred) (smudges pattern))))))
 
 (defn part2 [input] (process input different-reflection))
