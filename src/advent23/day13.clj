@@ -20,13 +20,12 @@
       (let [verticals (filter pred (is-vertical-reflection? pattern))]
         (if (not (empty? verticals)) (first verticals))))))
 
-(defn summarize [results]
-  (let [f (fn [acc [type v]] (+ acc (cond (= :horizontal type) (* 100 v) (= :vertical type) v :else 0)))]
-    (str (reduce f 0 results))))
+(defn process [input mapper]
+  (let [patterns (map vec (filter #(not (= '("") %)) (partition-by #(= "" %) input)))
+        f (fn [acc [type v]] (+ acc (cond (= :horizontal type) (* 100 v) (= :vertical type) v :else 0)))]
+    (str (reduce f 0 (map mapper patterns)))))
 
-(defn part1 [input]
-  (summarize
-    (map #(find-reflection % (fn [_] true)) (map vec (filter #(not (= '("") %)) (partition-by #(= "" %) input))))))
+(defn part1 [input] (process input #(find-reflection % (fn [_] true))))
 
 (defn smudge [pattern x y]
   (let [grid (mapv #(str/split % #"") pattern) row (get grid y) col (get row x)]
@@ -40,6 +39,4 @@
   (let [excludes #{(find-reflection pattern (fn [_] true))} pred (fn [v] (not (contains? excludes v)))]
     (first (filter (fn [v] (some? v)) (map #(find-reflection % pred) (smudges pattern))))))
 
-(defn part2 [input]
-  (summarize
-    (map different-reflection (mapv vec (filter #(not (= '("") %)) (partition-by #(= "" %) input))))))
+(defn part2 [input] (process input different-reflection))
