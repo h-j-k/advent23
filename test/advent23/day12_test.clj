@@ -1,6 +1,6 @@
 (ns advent23.day12-test
-  (:require [clojure.test :refer :all])
-  (:require [advent23.day12 :refer :all]))
+  (:require [advent23.day12 :refer :all]
+            [clojure.test :refer :all]))
 
 (def input (clojure.string/split-lines (slurp "resources/day12.txt")))
 
