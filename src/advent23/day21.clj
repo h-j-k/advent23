@@ -16,8 +16,16 @@
           [nil #{}] (map-indexed parse-row input))]
     [offset (into #{} (map (fn [[y x]] [(- y offset-y) (- x offset-x)]) rocks))]))
 
-(defn is-not-in [[[offset-y offset-x] rocks]]               ; assume offset is mid-point of initial maze
-  (fn [[y x :as p]] (not (contains? rocks p))))
+(defn is-not-in [[[offset _] rocks]]
+  ; assume offset is mid-point of initial *square* maze
+  (fn [[y x]]
+    (let [size (inc (* offset 2)) shifter (fn [v] (- (mod (+ v offset) size) offset))]
+      (not (contains? rocks [(shifter y) (shifter x)])))))
+
+(defn project [[offset _] [y x]]
+  (fn [[dy dx]]
+    (let [delta offset size (inc (* delta 2)) shifter (fn [v] (- (mod (+ v delta) size) delta))]
+      [(shifter (+ y dy)) (shifter + x dx)])))
 
 (defn next-step [offset-rocks [y x]]
   (filterv (is-not-in offset-rocks) (map (fn [[dy dx]] [(+ y dy) (+ x dx)]) [[-1 0] [1 0] [0 -1] [0 1]])))
