@@ -7,3 +7,5 @@
 (def answers (clojure.string/split-lines (slurp "resources/day21-answers.txt")))
 
 (deftest part1-test (testing "Part 1" (is (= (part1 input 64) (first answers)))))
+
+(deftest part2-test (testing "Part 2" (is (= (part2 input) (second answers)))))

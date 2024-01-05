@@ -22,17 +22,21 @@
     (let [size (inc (* offset 2)) shifter (fn [v] (- (mod (+ v offset) size) offset))]
       (not (contains? rocks [(shifter y) (shifter x)])))))
 
-(defn project [[offset _] [y x]]
-  (fn [[dy dx]]
-    (let [delta offset size (inc (* delta 2)) shifter (fn [v] (- (mod (+ v delta) size) delta))]
-      [(shifter (+ y dy)) (shifter + x dx)])))
-
 (defn next-step [offset-rocks [y x]]
   (filterv (is-not-in offset-rocks) (map (fn [[dy dx]] [(+ y dy) (+ x dx)]) [[-1 0] [1 0] [0 -1] [0 1]])))
 
-(defn part1 [input steps]
+(defn process [input steps]
   (let [offset-rocks (parse-map input)]
     (loop [i 0 origins #{[0 0]}]
       (if (= i steps)
-        (str (count origins))
+        (count origins)
         (recur (inc i) (into #{} (apply concat (map #(next-step offset-rocks %) origins))))))))
+
+(defn part1 [input steps] (str (process input steps)))
+
+(defn part2 [input]
+  (let [v1 (process input 65) v2 (process input 196) v3 (process input 327)
+        a (/ (+ v1 (- (* 2 v2)) v3) 2)
+        b (/ (+ (- (* 3 v1)) (* 4 v2) (- v3)) 2)
+        x 202300]
+    (+ (* a x x) (* b x) v1)))
