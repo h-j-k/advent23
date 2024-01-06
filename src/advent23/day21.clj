@@ -36,7 +36,5 @@
 
 (defn part2 [input]
   (let [n0 (process input 65) n1 (process input 196) n2 (process input 327)
-        a (/ (+ n0 (- (* 2 n1)) n2) 2)
-        b (/ (+ (- (* 3 n0)) (* 4 n1) (- n2)) 2)
-        x 202300]
+        a (/ (+ n0 (- (* 2 n1)) n2) 2) b (/ (+ (- (* 3 n0)) (* 4 n1) (- n2)) 2) x 202300]
     (str (+ (* a x x) (* b x) n0))))
