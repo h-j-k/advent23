@@ -35,8 +35,8 @@
 (defn part1 [input steps] (str (process input steps)))
 
 (defn part2 [input]
-  (let [v1 (process input 65) v2 (process input 196) v3 (process input 327)
-        a (/ (+ v1 (- (* 2 v2)) v3) 2)
-        b (/ (+ (- (* 3 v1)) (* 4 v2) (- v3)) 2)
+  (let [n0 (process input 65) n1 (process input 196) n2 (process input 327)
+        a (/ (+ n0 (- (* 2 n1)) n2) 2)
+        b (/ (+ (- (* 3 n0)) (* 4 n1) (- n2)) 2)
         x 202300]
-    (+ (* a x x) (* b x) v1)))
+    (str (+ (* a x x) (* b x) n0))))
