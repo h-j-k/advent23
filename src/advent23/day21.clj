@@ -36,5 +36,18 @@
 
 (defn part2 [input]
   (let [n0 (process input 65) n1 (process input 196) n2 (process input 327)
+        ; ** = f(202300) = f(202300 * 131 + 65) = f(26501365)
+        ; to solve ax^2 + bx + c...
+        ; n2 = f(2) = f(2 * 131 + 65) = f(327) [a(2 * 2) + 2b + c = 4a + 2b + c]
+        ; n1 = f(1) = f(1 * 131 + 65) = f(196) [a(1 * 1) + 1b + c = a + b + c]
+        ; n0 = f(0) = f(0 * 131 + 65) = f( 65) [a(0 * 0) + 0b + c = c]
+        ; therefore:
+        ; c = n0 <==
+        ; b = n1 - n0 - a
+        ; 4a = n2 - 2(n1 - n0 - a) - n0
+        ; 2a = n2 - 2n1 + n0
+        ; a = (n0 - 2n1 + n2) / 2 <==
+        ; b = (2n1 - 2n0 - (n0 - 2n1 + n2)) / 2
+        ; b = (-3n0 + 4n1 - n2) / 2 <==
         a (/ (+ n0 (- (* 2 n1)) n2) 2) b (/ (+ (- (* 3 n0)) (* 4 n1) (- n2)) 2) x 202300]
     (str (+ (* a x x) (* b x) n0))))
