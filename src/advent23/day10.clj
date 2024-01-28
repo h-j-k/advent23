@@ -1,7 +1,7 @@
 (ns advent23.day10)
 
 (defn parse-row [y row]
-  (let [m (re-matcher #"[SJL7F|-]" row)]
+  (let [m (re-matcher #"[S7FJL|-]" row)]
     (loop [r {:start nil :pipes []}]
       (if (. m find)
         (if (= "S" (. m group))
@@ -22,31 +22,22 @@
     (let [seen' (conj seen curr) [dy dx] (delta curr prev)]
       (case (get pipes curr)
         \S [seen' verticals]
-        \J (recur (if (zero? dy) [(dec y) x] [y (dec x)])
-                  curr seen' (update verticals y conj x))
-        \L (recur (if (zero? dy) [(dec y) x] [y (inc x)])
-                  curr seen' (update verticals y conj x))
-        \7 (recur (if (zero? dy) [(inc y) x] [y (dec x)])
-                  curr seen' verticals)
-        \F (recur (if (zero? dy) [(inc y) x] [y (inc x)])
-                  curr seen' verticals)
-        \| (recur [(+ y dy) (+ x dx)]
-                  curr seen' (update verticals y conj x))
-        \- (recur [(+ y dy) (+ x dx)]
-                  curr seen' verticals)))))
-
-(defn count-if [pred xs] (reduce (fn [acc x] (if (pred x) (inc acc) acc)) 0 xs))
+        \7 (recur (if (zero? dy) [(inc y) x] [y (dec x)]) curr seen' verticals)
+        \F (recur (if (zero? dy) [(inc y) x] [y (inc x)]) curr seen' verticals)
+        \J (recur (if (zero? dy) [(dec y) x] [y (dec x)]) curr seen' (update verticals y conj x))
+        \L (recur (if (zero? dy) [(dec y) x] [y (inc x)]) curr seen' (update verticals y conj x))
+        \| (recur [(+ y dy) (+ x dx)] curr seen' (update verticals y conj x))
+        \- (recur [(+ y dy) (+ x dx)] curr seen' verticals)))))
 
 (defn enclosed [seen verticals h w]
   (for [y (range h)
         :let [row-verticals (verticals y)]
         :when row-verticals
-        :let [min-vertical (apply min row-verticals)
-              max-vertical (apply max row-verticals)]
+        :let [min-vertical (apply min row-verticals) max-vertical (apply max row-verticals)]
         x (range w)
         :when (and (< min-vertical x max-vertical)
                    (not (seen [y x]))
-                   (odd? (count-if #(< % x) row-verticals)))]
+                   (odd? (reduce (fn [acc x'] (if (< x' x) (inc acc) acc)) 0 row-verticals)))]
     1))
 
 (defn part1 [input]
